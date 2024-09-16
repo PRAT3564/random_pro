@@ -1,0 +1,833 @@
+
+PROJECT STRUCTURE SPRING-BOOT
+
+src/
+├── main/
+│   ├── java/
+│   │   └── com/
+│   │       └── socialnetwork/
+│   │           ├── config/
+│   │           │   ├── SecurityConfig.java
+│   │           │   └── WebConfig.java
+│   │           ├── controller/
+│   │           │   ├── AuthController.java
+│   │           │   ├── UserController.java
+│   │           │   ├── PostController.java
+│   │           │   └── CommentController.java
+│   │           ├── model/
+│   │           │   ├── User.java
+│   │           │   ├── Post.java
+│   │           │   └── Comment.java
+│   │           ├── repository/
+│   │           │   ├── UserRepository.java
+│   │           │   ├── PostRepository.java
+│   │           │   └── CommentRepository.java
+│   │           ├── service/
+│   │           │   ├── UserService.java
+│   │           │   ├── PostService.java
+│   │           │   └── CommentService.java
+│   │           └── SocialNetworkApplication.java
+│   └── resources/
+│       └── application.properties
+└── test/
+    └── java/
+        └── com/
+            └── socialnetwork/
+                └── SocialNetworkApplicationTests.java
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1..SocialNetworkApplication.java
+
+package com.socialnetwork;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SocialNetworkApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SocialNetworkApplication.class, args);
+    }
+}
+----------------------------------------------------------------------------------------------------------------
+
+2..Entity
+
+a. User.java
+
+package com.socialnetwork.model;
+
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @ManyToMany
+    @JoinTable(
+        name = "user_friends",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private Set<User> friends = new HashSet<>();
+
+    // Getters and setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Set<User> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(Set<User> friends) {
+        this.friends = friends;
+    }
+}
+
+==================================================
+b.Post.java
+
+package com.socialnetwork.model;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "posts")
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(nullable = false)
+    private String content;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @ManyToMany
+    @JoinTable(
+        name = "post_likes",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> likes = new HashSet<>();
+
+    // Getters and setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Set<User> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<User> likes) {
+        this.likes = likes;
+    }
+}
+
+=====================================================
+c.Comment.java
+
+package com.socialnetwork.model;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "comments")
+public class Comment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    @Column(nullable = false)
+    private String content;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    // Getters and setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Post getPost() {
+        return post;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+}
+
+-------------------------------------------------------------------------------------------------------------------------------
+3..Repository
+
+a.UserRepository.java
+
+package com.socialnetwork.repository;
+
+import com.socialnetwork.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    User findByUsername(String username);
+    User findByEmail(String email);
+}
+
+======================================================================
+b.PostRepository.java
+
+package com.socialnetwork.repository;
+
+import com.socialnetwork.model.Post;
+import com.socialnetwork.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface PostRepository extends JpaRepository<Post, Long> {
+    List<Post> findByUserOrderByCreatedAtDesc(User user);
+}
+
+==========================================================================
+c.CommentRepository.java
+
+package com.socialnetwork.repository;
+
+import com.socialnetwork.model.Comment;
+import com.socialnetwork.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface CommentRepository extends JpaRepository<Comment, Long> {
+    List<Comment> findByPostOrderByCreatedAtAsc(Post post);
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+4..Service
+
+a.UserService.java
+
+package com.socialnetwork.service;
+
+import com.socialnetwork.model.User;
+import com.socialnetwork.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public User registerUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public void addFriend(User user, User friend) {
+        user.getFriends().add(friend);
+        userRepository.save(user);
+    }
+
+    public boolean removeFriend(User user, User friend) {
+        boolean removed = user.getFriends().remove(friend);
+        if (removed) {
+            userRepository.save(user);
+        }
+        return removed;
+    }
+}
+
+=================================================================================
+b.PostService.java
+
+package com.socialnetwork.service;
+
+import com.socialnetwork.model.Post;
+import com.socialnetwork.model.User;
+import com.socialnetwork.repository.PostRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class PostService {
+    @Autowired
+    private PostRepository postRepository;
+
+    public Post createPost(User user, String content) {
+        Post post = new Post();
+        post.setUser(user);
+        post.setContent(content);
+        post.setCreatedAt(LocalDateTime.now());
+        return postRepository.save(post);
+    }
+
+    public List<Post> getPostsByUser(User user) {
+        return postRepository.findByUserOrderByCreatedAtDesc(user);
+    }
+
+    public void likePost(Post post, User user) {
+        post.getLikes().add(user);
+        postRepository.save(post);
+    }
+
+    public boolean unlikePost(Post post, User user) {
+        boolean removed = post.getLikes().remove(user);
+        if (removed) {
+            postRepository.save(post);
+        }
+        return removed;
+    }
+
+    public Post getPostById(Long id) {
+        return postRepository.findById(id).orElse(null);
+    }
+}
+
+================================================================================================
+c.CommentService.java
+
+package com.socialnetwork.service;
+
+import com.socialnetwork.model.Comment;
+import com.socialnetwork.model.Post;
+import com.socialnetwork.model.User;
+import com.socialnetwork.repository.CommentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class CommentService {
+    @Autowired
+    private CommentRepository commentRepository;
+
+    public Comment createComment(User user, Post post, String content) {
+        Comment comment = new Comment();
+        comment.setUser(user);
+        comment.setPost(post);
+        comment.setContent(content);
+        comment.setCreatedAt(LocalDateTime.now());
+        return commentRepository.save(comment);
+    }
+
+    public List<Comment> getCommentsByPost(Post post) {
+        return commentRepository.findByPostOrderByCreatedAtAsc(post);
+    }
+
+    public Comment getCommentById(Long id) {
+        return commentRepository.findById(id).orElse(null);
+    }
+
+    public void deleteComment(Comment comment) {
+        commentRepository.delete(comment);
+    }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+5..Controller
+
+a. UserController.java
+
+package com.socialnetwork.controller;
+
+import com.socialnetwork.model.User;
+import com.socialnetwork.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUserById(@PathVariable Long userId) {
+        User user = userService.findById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/add-friend/{friendId}")
+    public ResponseEntity<?> addFriend(Authentication authentication, @PathVariable Long friendId) {
+        User currentUser = userService.findByUsername(authentication.getName());
+        User friend = userService.findById(friendId);
+        
+        if (friend == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        userService.addFriend(currentUser, friend);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/remove-friend/{friendId}")
+    public ResponseEntity<?> removeFriend(Authentication authentication, @PathVariable Long friendId) {
+        User currentUser = userService.findByUsername(authentication.getName());
+        User friend = userService.findById(friendId);
+        
+        if (friend == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        boolean removed = userService.removeFriend(currentUser, friend);
+        if (removed) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().body("Friend not found in user's friend list");
+        }
+    }
+
+    @GetMapping("/friends")
+    public ResponseEntity<?> getFriendList(Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName());
+        List<User> friends = user.getFriends().stream().collect(Collectors.toList());
+        return ResponseEntity.ok(friends);
+    }
+}
+
+=================================================================================================================
+b.PostController.java
+
+package com.socialnetwork.controller;
+
+import com.socialnetwork.model.Post;
+import com.socialnetwork.model.User;
+import com.socialnetwork.service.PostService;
+import com.socialnetwork.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/posts")
+public class PostController {
+    @Autowired
+    private PostService postService;
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping
+    public ResponseEntity<?> createPost(Authentication authentication, @RequestBody Map<String, String> postRequest) {
+        User user = userService.findByUsername(authentication.getName());
+        String content = postRequest.get("content");
+        Post post = postService.createPost(user, content);
+        return ResponseEntity.ok(post);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getPostsByUser(@PathVariable Long userId) {
+        User user = userService.findById(userId);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Post> posts = postService.getPostsByUser(user);
+        return ResponseEntity.ok(posts);
+    }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<?> likePost(Authentication authentication, @PathVariable Long postId) {
+        User user = userService.findByUsername(authentication.getName());
+        Post post = postService.getPostById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+        postService.likePost(post, user);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{postId}/unlike")
+    public ResponseEntity<?> unlikePost(Authentication authentication, @PathVariable Long postId) {
+        User user = userService.findByUsername(authentication.getName());
+        Post post = postService.getPostById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+        boolean unliked = postService.unlikePost(post, user);
+        if (unliked) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().body("User has not liked this post");
+        }
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<?> getPostById(@PathVariable Long postId) {
+        Post post = postService.getPostById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(post);
+    }
+}
+
+==========================================================================================================
+c.CommentController.java
+
+package com.socialnetwork.controller;
+
+import com.socialnetwork.model.Comment;
+import com.socialnetwork.model.Post;
+import com.socialnetwork.model.User;
+import com.socialnetwork.service.CommentService;
+import com.socialnetwork.service.PostService;
+import com.socialnetwork.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/comments")
+public class CommentController {
+    @Autowired
+    private CommentService commentService;
+
+    @Autowired
+    private PostService postService;
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping
+    public ResponseEntity<?> createComment(Authentication authentication, @RequestBody Map<String, String> commentRequest) {
+        User user = userService.findByUsername(authentication.getName());
+        Long postId = Long.parseLong(commentRequest.get("postId"));
+        String content = commentRequest.get("content");
+
+        Post post = postService.getPostById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Comment comment = commentService.createComment(user, post, content);
+        return ResponseEntity.ok(comment);
+    }
+
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<?> getCommentsByPost(@PathVariable Long postId) {
+        Post post = postService.getPostById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Comment> comments = commentService.getCommentsByPost(post);
+        return ResponseEntity.ok(comments);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(Authentication authentication, @PathVariable Long commentId) {
+        User user = userService.findByUsername(authentication.getName());
+        Comment comment = commentService.getCommentById(commentId);
+
+        if (comment == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!comment.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.forbidden().body("You can only delete your own comments");
+        }
+
+        commentService.deleteComment(comment);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{commentId}")
+    public ResponseEntity<?> getCommentById(@PathVariable Long commentId) {
+        Comment comment = commentService.getCommentById(commentId);
+        if (comment == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(comment);
+    }
+}
+
+
+
+
+
+
+
+
+
+pom.xml file
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.socialnetwork</groupId>
+    <artifactId>social-network-app</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>social-network-app</name>
+    <description>Social Network Application using Spring Boot</description>
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+    <dependencies>
+        <!-- Spring Boot Starter Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Starter Data JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Starter Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Starter Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- MySQL Connector -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- JWT Library -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <!-- Jackson Datatype JSR310 for Java 8 Date/Time support -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!-- Lombok for reducing boilerplate code -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot Starter Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Security Test -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
